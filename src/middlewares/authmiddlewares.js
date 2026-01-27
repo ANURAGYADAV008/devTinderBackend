@@ -1,13 +1,27 @@
-const adminAuth=(req,res,next)=>{
-    console.log("Admin is autorized")
-    const token="xyz";
-    if(token==="xyz")next();
-    else res.status(400).send({message:"Unothorized Action"});
+require("dotenv").config();
+const jwt=require("jsonwebtoken");
+const { User } = require("../models/user");
+const userAuth=async (req,res,next)=>{
+   try{
+    const {token}=req.cookies;
+
+    if(!token)throw new Error("Token is Not Valid");
+
+   const decodedmessage=await jwt.verify(token,process.env.SECREAT_KEY);
+
+   const {_id}=decodedmessage;
+   const user=await User.findOne({_id:_id});
+   if(!user)throw new Error("User Not Found");
+    console.log("User is",user);
+    req.user = user;        
+   // for Mongoose
+
+   next();
+   }
+   catch(error){
+     res.status(400).send({message:error.message});
+   }
+
+    
 }
-const userAuth=(req,res,next)=>{
-    console.log("user is autorized")
-    const token="xyz";
-    if(token==="xyz")next();
-    else res.status(400).send({message:"Unothorized Action"});
-}
-module.exports={adminAuth,userAuth};
+module.exports={userAuth};

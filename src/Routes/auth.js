@@ -1,8 +1,7 @@
-const express = require("express");
+const express=require("express");
+const authRouter=express.Router();
 require("dotenv").config();
 const { User } = require("./models/user")
-const { connectDb } = require("./config/database")
-const PORT = 3000;
 const { userAuth } = require("./middlewares/authmiddlewares")
 const app = express();
 const { validateSignup } = require("./utils/validation");
@@ -12,7 +11,8 @@ const jwt = require("jsonwebtoken");
 app.use(express.json());
 app.use(cookieParser());
 
-app.post("/login", async (req, res) => {
+
+authRouter.post("/login", async (req, res) => {
     try {
         const { emailId, password } = req.body;
 
@@ -45,7 +45,7 @@ app.post("/login", async (req, res) => {
 
 })
 
-app.post("/signup", async (req, res) => {
+authRouter.post("/signup", async (req, res) => {
     try {
 
         const { firstName, lastName, emailId, password, age } = req.body;
@@ -78,62 +78,57 @@ app.post("/signup", async (req, res) => {
 
 })
 
-app.get("/profile", userAuth, async (req, res) => {
+authRouter.delete("/deleteuser", userAuth, async (req, res) => {
     try {
-        const { user } = req
+        const { id } = req.body;
+        if (!id) {
+            return res.status(400).send({ message: "Invalid emailId" })
+        }
+        const { deleteCount } = await User.findOneAndDelete({ _id: id });
 
-        console.log(user);
-        res.status(200).send({ message: user });
+        if (deleteCount === 0) return res.status(404).send({ message: "User not found" });
 
-    } catch (error) {
-        res.status(400).send({ message: `Someething went wrong : ${error.message}` });
+        res.status(200).send({ message: "User deleted Successfully" })
 
-
-    }
-
-})
-app.get("/user", userAuth, async (req, res) => {
-    try {
-        const { emailId } = req.body;
-
-        if (!emailId) return res.status(500).send({ message: "Email id Is Required" });
-
-        const user = await User.findOne({ emailId: emailId });
-
-        if (!user) res.status(404).send({ message: "User Not Found" })
-
-        res.status(200).send({ message: user });
     }
     catch (error) {
-        res.status(400).send({ message: `Someething went wrong ${error.message}` })
+        res.status(404).send({ message: `Someething went wrong ${error.message}` })
     }
+
 })
 
-app.get("/feed", userAuth, async (req, res) => {
+
+authRouter.patch("/updatedata/:userId", userAuth, async (req, res) => {
     try {
-        const users = await User.find({});
+        const { id } = req.params?.userId;
+        const data = req.body;
 
-        if (!users) return res.status(404).send({ message: "User Not Found" })
+        if (data?.skills?.lenght > 10) throw new Error("skills Cannot be More Than 10")
 
-        res.status(200).send({ message: users });
+        const ALLOWED_UPDATE = ["photoUrl", "about", "gender", "age"];
+
+        const isUpdateAllowed = Object.keys(data).every((k) => ALLOWED_UPDATE.includes(k));
+
+        if (!isUpdateAllowed) {
+            throw new Error("Update Not allowed");
+        }
 
 
-    } catch (error) {
-        res.status(400).send({ message: `Someething went wrong ${error.message}` });
+        const user = await User.findOneAndUpdate({ _id: id }, data, {
+            runvalidator: true
+        });
+
+        if (!user) {
+            return res.status(404).send({ message: "User not found" });
+        }
+
+        res.status(200).send({ message: "User Updated Successfully", user: user })
 
     }
+    catch (error) {
+        res.status(404).send({ message: `Someething went wrong ${error.message}` })
+    }
+
+
 })
-
-
-
-
-connectDb()
-    .then(() => {
-        console.log("Data Base Connection established ...");
-        app.listen(PORT, () => {
-            console.log(`server Start Listen at ${PORT} PORT`)
-        })
-    })
-    .catch((error) => {
-        console.log("Dtabase Cannot be Connected !!!");
-    })
+module.exports={authRouter}
