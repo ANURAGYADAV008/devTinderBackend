@@ -12,7 +12,7 @@ const userAuth=async (req,res,next)=>{
    const {_id}=decodedmessage;
    const user=await User.findOne({_id:_id});
    if(!user)throw new Error("User Not Found");
-    console.log("User is",user);
+    //console.log("User is",user);
     req.user = user;        
    // for Mongoose
 

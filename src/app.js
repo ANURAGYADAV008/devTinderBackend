@@ -3,129 +3,18 @@ require("dotenv").config();
 const { User } = require("./models/user")
 const { connectDb } = require("./config/database")
 const PORT = 3000;
-const { userAuth } = require("./middlewares/authmiddlewares")
 const app = express();
-const { validateSignup } = require("./utils/validation");
-const bcrypt = require("bcryptjs");
 const cookieParser = require("cookie-parser");
 const jwt = require("jsonwebtoken");
 app.use(express.json());
 app.use(cookieParser());
+const {authRouter}=require("./Routes/auth");
+const {profileRouter}=require("./Routes/profile");
+const {requestRouter}=require("./Routes/request");
 
-app.post("/login", async (req, res) => {
-    try {
-        const { emailId, password } = req.body;
-
-        if (!emailId || !password) throw new Error("Fields Are Required");
-
-        const user = await User.findOne({ emailId: emailId });
-
-        if (!user) throw new Error("Invalid Emailid or Password");
-
-       //mongodbmethods
-        const isPasswordValid = await user.getValidatePassword(password);
-
-        if (isPasswordValid) {
-            //crete jwt token from schema methods
-            const token = await user.getJWT();
-
-            //send back token to the user
-            res.cookie("token", token, { expires: new Date(Date.now() + 8 * 3600000) });
-
-            res.status(200).send({ message: "User Login Successfully" })
-        }
-
-
-    } catch (error) {
-        res.status(400).send({ message: error.message });
-
-    }
-
-
-
-})
-
-app.post("/signup", async (req, res) => {
-    try {
-
-        const { firstName, lastName, emailId, password, age } = req.body;
-        validateSignup(req);
-        //hashPassword
-
-
-
-        const salt = await bcrypt.genSalt(10);
-        const hashPassword = await bcrypt.hash(password, salt);
-
-        const user = new User({
-            fistName: firstName,
-            lastName: lastName,
-            emailId: emailId,
-            password: hashPassword,
-            age: age
-        });
-        await user.save();
-        res.status(200).send({
-            message: "User added Successfully",
-            user: user
-        });
-
-    }
-    catch (error) {
-        res.status(400).send({ message: error.message });
-
-    }
-
-})
-
-app.get("/profile", userAuth, async (req, res) => {
-    try {
-        const { user } = req
-
-        console.log(user);
-        res.status(200).send({ message: user });
-
-    } catch (error) {
-        res.status(400).send({ message: `Someething went wrong : ${error.message}` });
-
-
-    }
-
-})
-app.get("/user", userAuth, async (req, res) => {
-    try {
-        const { emailId } = req.body;
-
-        if (!emailId) return res.status(500).send({ message: "Email id Is Required" });
-
-        const user = await User.findOne({ emailId: emailId });
-
-        if (!user) res.status(404).send({ message: "User Not Found" })
-
-        res.status(200).send({ message: user });
-    }
-    catch (error) {
-        res.status(400).send({ message: `Someething went wrong ${error.message}` })
-    }
-})
-
-app.get("/feed", userAuth, async (req, res) => {
-    try {
-        const users = await User.find({});
-
-        if (!users) return res.status(404).send({ message: "User Not Found" })
-
-        res.status(200).send({ message: users });
-
-
-    } catch (error) {
-        res.status(400).send({ message: `Someething went wrong ${error.message}` });
-
-    }
-})
-
-
-
+app.use("/",authRouter);
+app.use("/",profileRouter);
+app.use("/",requestRouter);
 
 connectDb()
     .then(() => {

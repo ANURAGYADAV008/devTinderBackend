@@ -2,10 +2,12 @@ const mongoose = require("mongoose");
 require("dotenv").config();
 const validator = require("validator")
 const bcrypt = require("bcryptjs");
+const jwt=require("jsonwebtoken");
 const userSchema = mongoose.Schema({
-    fistName: {
+    firstName: {
         type: String,
         required: true,
+        index:true,
         maxlength: 20
 
     },

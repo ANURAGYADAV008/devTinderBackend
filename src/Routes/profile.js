@@ -1,10 +1,10 @@
 const express=require("express");
 const profileRouter=express.Router();
 require("dotenv").config();
-const { User } = require("./models/user")
-const { userAuth } = require("./middlewares/authmiddlewares")
+const { User } = require("../models/user")
+const { userAuth } = require("../middlewares/authmiddlewares")
 const app = express();
-const { validateSignup } = require("./utils/validation");
+const { validateSignup } = require("../utils/validation");
 const bcrypt = require("bcryptjs");
 const cookieParser = require("cookie-parser");
 const jwt = require("jsonwebtoken");
@@ -13,12 +13,13 @@ app.use(cookieParser());
 
 
 
-profileRouter.get("/profile", userAuth, async (req, res) => {
+profileRouter.get("/profile/view", userAuth, async (req, res) => {
     try {
-        const { user } = req
+        const { user } = req;
 
         console.log(user);
         res.status(200).send({ message: user });
+        
 
     } catch (error) {
         res.status(400).send({ message: `Someething went wrong : ${error.message}` });
@@ -27,22 +28,86 @@ profileRouter.get("/profile", userAuth, async (req, res) => {
     }
 
 })
-profileRouter.get("/user", userAuth, async (req, res) => {
+
+profileRouter.patch("/profile/edit", userAuth, async (req, res) => {
     try {
-        const { emailId } = req.body;
+        const { id } = req.user;
+        const data = req.body;
+        //console.log(data);
 
-        if (!emailId) return res.status(500).send({ message: "Email id Is Required" });
+        if (data?.skills?.lenght > 10) throw new Error("skills Cannot be More Than 10")
 
-        const user = await User.findOne({ emailId: emailId });
+        const ALLOWED_UPDATE = ["photoUrl", "about", "gender", "age","skills"];
 
-        if (!user) res.status(404).send({ message: "User Not Found" })
+        const isUpdateAllowed = Object.keys(data).every((k) => ALLOWED_UPDATE.includes(k));
 
-        res.status(200).send({ message: user });
+        if (!isUpdateAllowed) {
+            throw new Error("Update Not allowed");
+        }
+
+
+        const user = await User.findOneAndUpdate({ _id: id }, data, {
+            runvalidator: true
+        });
+
+
+
+        if (!user) {
+            return res.status(404).send({ message: "User not found" });
+        }
+
+        res.status(200).send({ message: ` ${user.firstName } your Profile Updated Successfully` , user: user })
+
     }
     catch (error) {
-        res.status(400).send({ message: `Someething went wrong ${error.message}` })
+        res.status(404).send({ message: `Someething went wrong ${error.message}` })
+    }
+
+
+})
+
+
+profileRouter.patch("/profile/forgetPassword",userAuth,async(req,res)=>{
+    try{
+        const {password}=req.body;
+        if(!password)throw new Eroor("Password Fieds Are Required");
+
+        const {_id}=req.user;
+        
+        const salt = await bcrypt.genSalt(10);
+        const hashPassword = await bcrypt.hash(password, salt);
+
+         const user = await User.findOneAndUpdate({ _id: _id }, {password:hashPassword}, {
+            runvalidator: true
+        });
+
+         res.status(200).send({ message: "Password updated successfully" });
+
+    }catch(error){
+         res.status(404).send({ message: `Someething went wrong ${error.message}` })
+        
+
     }
 })
+
+
+
+// profileRouter.get("/user", userAuth, async (req, res) => {
+//     try {
+//         const { emailId } = req.body;
+
+//         if (!emailId) return res.status(500).send({ message: "Email id Is Required" });
+
+//         const user = await User.findOne({ emailId: emailId });
+
+//         if (!user) res.status(404).send({ message: "User Not Found" })
+
+//         res.status(200).send({ message: user });
+//     }
+//     catch (error) {
+//         res.status(400).send({ message: `Someething went wrong ${error.message}` })
+//     }
+// })
 
 profileRouter.get("/feed", userAuth, async (req, res) => {
     try {

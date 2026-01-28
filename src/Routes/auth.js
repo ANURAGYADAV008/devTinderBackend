@@ -1,10 +1,10 @@
 const express=require("express");
 const authRouter=express.Router();
 require("dotenv").config();
-const { User } = require("./models/user")
-const { userAuth } = require("./middlewares/authmiddlewares")
+const { User } = require("../models/user")
+const { userAuth } = require("../middlewares/authmiddlewares")
 const app = express();
-const { validateSignup } = require("./utils/validation");
+const { validateSignup } = require("../utils/validation");
 const bcrypt = require("bcryptjs");
 const cookieParser = require("cookie-parser");
 const jwt = require("jsonwebtoken");
@@ -15,6 +15,7 @@ app.use(cookieParser());
 authRouter.post("/login", async (req, res) => {
     try {
         const { emailId, password } = req.body;
+        console.log(`${emailId}  ${password} `);
 
         if (!emailId || !password) throw new Error("Fields Are Required");
 
@@ -27,7 +28,9 @@ authRouter.post("/login", async (req, res) => {
 
         if (isPasswordValid) {
             //crete jwt token from schema methods
+            console.log("generate Ho gaya")
             const token = await user.getJWT();
+            console.log("generate Ho gaya")
 
             //send back token to the user
             res.cookie("token", token, { expires: new Date(Date.now() + 8 * 3600000) });
@@ -97,38 +100,13 @@ authRouter.delete("/deleteuser", userAuth, async (req, res) => {
 
 })
 
-
-authRouter.patch("/updatedata/:userId", userAuth, async (req, res) => {
-    try {
-        const { id } = req.params?.userId;
-        const data = req.body;
-
-        if (data?.skills?.lenght > 10) throw new Error("skills Cannot be More Than 10")
-
-        const ALLOWED_UPDATE = ["photoUrl", "about", "gender", "age"];
-
-        const isUpdateAllowed = Object.keys(data).every((k) => ALLOWED_UPDATE.includes(k));
-
-        if (!isUpdateAllowed) {
-            throw new Error("Update Not allowed");
-        }
-
-
-        const user = await User.findOneAndUpdate({ _id: id }, data, {
-            runvalidator: true
-        });
-
-        if (!user) {
-            return res.status(404).send({ message: "User not found" });
-        }
-
-        res.status(200).send({ message: "User Updated Successfully", user: user })
-
-    }
-    catch (error) {
-        res.status(404).send({ message: `Someething went wrong ${error.message}` })
-    }
-
+authRouter.post("/logOut",async(req,res)=>{
+    res.cookie("token",null,{
+        expires:new Date(Date.now())
+    })
+    res.status(200).send({message:"You Are LoggedOut Successfully"})
 
 })
+
+
 module.exports={authRouter}
