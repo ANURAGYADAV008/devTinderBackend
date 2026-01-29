@@ -26,6 +26,9 @@ authRouter.post("/login", async (req, res) => {
        //mongodbmethods
         const isPasswordValid = await user.getValidatePassword(password);
 
+
+        if(!isPasswordValid) throw new Error("Invalid Email or Password");
+
         if (isPasswordValid) {
             //crete jwt token from schema methods
             console.log("generate Ho gaya")
@@ -61,7 +64,7 @@ authRouter.post("/signup", async (req, res) => {
         const hashPassword = await bcrypt.hash(password, salt);
 
         const user = new User({
-            fistName: firstName,
+            firstName: firstName,
             lastName: lastName,
             emailId: emailId,
             password: hashPassword,

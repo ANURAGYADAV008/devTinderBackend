@@ -8,8 +8,7 @@ const { validateSignup } = require("../utils/validation");
 const bcrypt = require("bcryptjs");
 const cookieParser = require("cookie-parser");
 const jwt = require("jsonwebtoken");
-app.use(express.json());
-app.use(cookieParser());
+
 
 
 
@@ -35,7 +34,7 @@ profileRouter.patch("/profile/edit", userAuth, async (req, res) => {
         const data = req.body;
         //console.log(data);
 
-        if (data?.skills?.lenght > 10) throw new Error("skills Cannot be More Than 10")
+        if (data?.skills?.length > 10) throw new Error("skills Cannot be More Than 10")
 
         const ALLOWED_UPDATE = ["photoUrl", "about", "gender", "age","skills"];
 
@@ -47,6 +46,7 @@ profileRouter.patch("/profile/edit", userAuth, async (req, res) => {
 
 
         const user = await User.findOneAndUpdate({ _id: id }, data, {
+            new:true,//return new data
             runvalidator: true
         });
 
@@ -67,7 +67,7 @@ profileRouter.patch("/profile/edit", userAuth, async (req, res) => {
 })
 
 
-profileRouter.patch("/profile/forgetPassword",userAuth,async(req,res)=>{
+profileRouter.patch("/profile/updatePassword",userAuth,async(req,res)=>{
     try{
         const {password}=req.body;
         if(!password)throw new Eroor("Password Fieds Are Required");
@@ -109,19 +109,19 @@ profileRouter.patch("/profile/forgetPassword",userAuth,async(req,res)=>{
 //     }
 // })
 
-profileRouter.get("/feed", userAuth, async (req, res) => {
-    try {
-        const users = await User.find({});
+// profileRouter.get("/feed", userAuth, async (req, res) => {
+//     try {
+//         const users = await User.find({});
 
-        if (!users) return res.status(404).send({ message: "User Not Found" })
+//         if (!users) return res.status(404).send({ message: "User Not Found" })
 
-        res.status(200).send({ message: users });
+//         res.status(200).send({ message: users });
 
 
-    } catch (error) {
-        res.status(400).send({ message: `Someething went wrong ${error.message}` });
+//     } catch (error) {
+//         res.status(400).send({ message: `Someething went wrong ${error.message}` });
 
-    }
-})
+//     }
+// })
 
 module.exports={profileRouter};
