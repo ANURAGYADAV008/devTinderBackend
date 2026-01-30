@@ -6,12 +6,22 @@ const PORT = 3000;
 const app = express();
 const cookieParser = require("cookie-parser");
 const jwt = require("jsonwebtoken");
+const cors=require("cors");
 app.use(express.json());
 app.use(cookieParser());
 const {authRouter}=require("./Routes/auth");
 const {profileRouter}=require("./Routes/profile");
 const {requestRouter}=require("./Routes/request");
 const {userRouter}=require("./Routes/user")
+
+app.use(cors({
+  origin: "http://localhost:5173", // frontend URL (Vite)
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
+
+
 
 app.use("/",authRouter);
 app.use("/",profileRouter);
