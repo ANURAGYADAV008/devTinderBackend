@@ -2,7 +2,7 @@ const express = require("express");
 require("dotenv").config();
 const { User } = require("./models/user")
 const { connectDb } = require("./config/database")
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 const app = express();
 const cookieParser = require("cookie-parser");
 const jwt = require("jsonwebtoken");
@@ -17,7 +17,7 @@ const {userRouter}=require("./Routes/user")
 app.use(cors({
   origin: "http://localhost:5173", // frontend URL (Vite)
   credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS","PATCH"],
   allowedHeaders: ["Content-Type", "Authorization"]
 }));
 

@@ -28,43 +28,91 @@ profileRouter.get("/profile/view", userAuth, async (req, res) => {
 
 })
 
+
 profileRouter.patch("/profile/edit", userAuth, async (req, res) => {
-    try {
-        const { id } = req.user;
-        const data = req.body;
-        //console.log(data);
+  try {
+    const { _id } = req.user;
+    const data = req.body;
 
-        if (data?.skills?.length > 10) throw new Error("skills Cannot be More Than 10")
-
-        const ALLOWED_UPDATE = ["photoUrl", "about", "gender", "age","skills"];
-
-        const isUpdateAllowed = Object.keys(data).every((k) => ALLOWED_UPDATE.includes(k));
-
-        if (!isUpdateAllowed) {
-            throw new Error("Update Not allowed");
-        }
-
-
-        const user = await User.findOneAndUpdate({ _id: id }, data, {
-            new:true,//return new data
-            runvalidator: true
-        });
-
-
-
-        if (!user) {
-            return res.status(404).send({ message: "User not found" });
-        }
-
-        res.status(200).send({ message: ` ${user.firstName } your Profile Updated Successfully` , user: user })
-
-    }
-    catch (error) {
-        res.status(404).send({ message: `Someething went wrong ${error.message}` })
+    if (data?.skills?.length > 10) {
+      throw new Error("Skills cannot be more than 10");
     }
 
+    const ALLOWED_UPDATE = [
+      "firstName",
+      "lastName",
+      "photoUrl",
+      "about",
+      "gender",
+      "age",
+      "skills"
+    ];
 
-})
+    const isUpdateAllowed = Object.keys(data).every((k) =>
+      ALLOWED_UPDATE.includes(k)
+    );
+
+    if (!isUpdateAllowed) {
+      throw new Error("Update not allowed");
+    }
+
+    const user = await User.findOneAndUpdate(
+      { _id },
+      data,
+      { new: true, runValidators: true }
+    );
+
+    if (!user) {
+      return res.status(404).send({ message: "User not found" });
+    }
+
+    res.status(200).send({
+      message: `${user.firstName}, your profile updated successfully`,
+      user
+    });
+
+  } catch (error) {
+    res.status(400).send({ message: error.message });
+  }
+});
+
+// profileRouter.patch("/profile/edit", userAuth, async (req, res) => {
+//     try {
+//         const { id } = req.user;
+//         const data = req.body;
+//         //console.log(data);
+
+//         if (data?.skills?.length > 10) throw new Error("skills Cannot be More Than 10")
+
+//         const ALLOWED_UPDATE = ["photoUrl", "about", "gender", "age","skills"];
+
+//         const isUpdateAllowed = Object.keys(data).every((k) => ALLOWED_UPDATE.includes(k));
+
+//         if (!isUpdateAllowed) {
+//             throw new Error("Update Not allowed");
+//         }
+
+
+//         const user = await User.findOneAndUpdate({ _id: id }, data, {
+//             new:true,//return new data
+//             runvalidator: true
+//         });
+
+
+
+//         if (!user) {
+//             return res.status(404).send({ message: "User not found" });
+//         }
+
+//         res.status(200).send({ message: ` ${user.firstName } your Profile Updated Successfully` , user: user })
+
+//     }
+//     catch (error) {
+//         res.status(404).send({ message: `Someething went wrong ${error.message}` })
+//     }
+
+
+// })
 
 
 profileRouter.patch("/profile/updatePassword",userAuth,async(req,res)=>{

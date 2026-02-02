@@ -103,13 +103,20 @@ authRouter.delete("/deleteuser", userAuth, async (req, res) => {
 
 })
 
-authRouter.post("/logOut",async(req,res)=>{
-    res.cookie("token",null,{
-        expires:new Date(Date.now())
-    })
-    res.status(200).send({message:"You Are LoggedOut Successfully"})
+    authRouter.post("/logout", (req, res) => {
+  res.cookie("token", "", {
+    httpOnly: true,
+    secure: true,        // must match login
+    sameSite: "none",    // must match login
+    path: "/",           // must match login
+    expires: new Date(0) // force expire
+  });
 
-})
+  res.status(200).json({
+    message: "You Are Logged Out Successfully"
+  });
+});
+
 
 
 module.exports={authRouter}
