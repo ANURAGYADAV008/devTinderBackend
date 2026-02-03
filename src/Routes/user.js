@@ -34,13 +34,13 @@ userRouter.get("/user/connections", userAuth, async (req, res) => {
 
         }).populate("fromUserid", ["firstName", "lastName", "age", "photoUrl","about"]).populate("toUserid", ["firstName", "lastName", "age", "photoUrl"])
 
-        if (getallConnection.lenght === 0) return res.status(400).send({ message: "NO coonection Request Found" });
+        if (getallConnection.length === 0) return res.status(400).send({ message: "NO coonection Request Found" });
 
         const data = getallConnection.map((items) => {
             if (items.fromUserid._id.toString() === userid.toString()) {
                 return items.toUserid
             }
-            items.fromUserid
+            return items.fromUserid
         })
 
         res.status(200).send({ data: data });
