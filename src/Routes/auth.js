@@ -31,9 +31,9 @@ authRouter.post("/login", async (req, res) => {
 
         if (isPasswordValid) {
             //crete jwt token from schema methods
-            console.log("generate Ho gaya")
+           
             const token = await user.getJWT();
-            console.log("generate Ho gaya")
+        
 
             //send back token to the user
             res.cookie("token", token, { expires: new Date(Date.now() + 8 * 3600000) });
@@ -70,10 +70,16 @@ authRouter.post("/signup", async (req, res) => {
             password: hashPassword,
             age: age
         });
-        await user.save();
+        const SavedUser=await user.save();
+        const token =await SavedUser.getJWT();
+
+        res.cookie("token",token,{
+            expires:new Date(Date.now()+8*360000)
+        })
+
         res.status(200).send({
             message: "User added Successfully",
-            user: user
+            user: SavedUser
         });
 
     }

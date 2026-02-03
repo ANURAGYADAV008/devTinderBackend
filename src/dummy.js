@@ -1,6 +1,6 @@
 // app.get(/^\/us(e)?r$/,(req,res,next)=>{//     console.log("HI there")
 //      next();
-//      console.log("Yeah Baby again !!!!")
+//      e.log("Yeah Baby again !!!!")
 //     //res.send({message:"get User Data"});
  
 // },(req,res,next)=>{
