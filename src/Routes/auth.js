@@ -1,5 +1,5 @@
-const express=require("express");
-const authRouter=express.Router();
+const express = require("express");
+const authRouter = express.Router();
 require("dotenv").config();
 const { User } = require("../models/user")
 const { userAuth } = require("../middlewares/authmiddlewares")
@@ -23,22 +23,29 @@ authRouter.post("/login", async (req, res) => {
 
         if (!user) throw new Error("Invalid Emailid or Password");
 
-       //mongodbmethods
+        //mongodbmethods
         const isPasswordValid = await user.getValidatePassword(password);
 
 
-        if(!isPasswordValid) throw new Error("Invalid Email or Password");
+        if (!isPasswordValid) throw new Error("Invalid Email or Password");
 
         if (isPasswordValid) {
             //crete jwt token from schema methods
-           
+
             const token = await user.getJWT();
-        
+
 
             //send back token to the user
-            res.cookie("token", token, { expires: new Date(Date.now() + 8 * 3600000) });
+            // 
+            res.cookie("token", token, {
+                httpOnly: true,
+                secure: false,
+                sameSite: "lax",
+                expires: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000) // 10 days
+            });
 
-            res.status(200).send({ message: "User Login Successfully",user:user })
+
+            res.status(200).send({ message: "User Login Successfully", user: user })
         }
 
 
@@ -70,12 +77,16 @@ authRouter.post("/signup", async (req, res) => {
             password: hashPassword,
             age: age
         });
-        const SavedUser=await user.save();
-        const token =await SavedUser.getJWT();
+        const SavedUser = await user.save();
+        const token = await SavedUser.getJWT();
 
-        res.cookie("token",token,{
-            expires:new Date(Date.now()+8*360000)
-        })
+        res.cookie("token", token, {
+            httpOnly: true,
+            secure: false,          // HTTP (change to true when HTTPS)
+            sameSite: "lax",
+            expires: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000) // 10 days
+        });
+
 
         res.status(200).send({
             message: "User added Successfully",
@@ -109,20 +120,20 @@ authRouter.delete("/deleteuser", userAuth, async (req, res) => {
 
 })
 
-    authRouter.post("/logout", (req, res) => {
-  res.cookie("token", "", {
-    httpOnly: true,
-    secure: true,        // must match login
-    sameSite: "none",    // must match login
-    path: "/",           // must match login
-    expires: new Date(0) // force expire
-  });
+authRouter.post("/logout", (req, res) => {
+    res.cookie("token", "", {
+        httpOnly: true,
+        secure: true,        // must match login
+        sameSite: "none",    // must match login
+        path: "/",           // must match login
+        expires: new Date(0) // force expire
+    });
 
-  res.status(200).json({
-    message: "You Are Logged Out Successfully"
-  });
+    res.status(200).json({
+        message: "You Are Logged Out Successfully"
+    });
 });
 
 
 
-module.exports={authRouter}
+module.exports = { authRouter }

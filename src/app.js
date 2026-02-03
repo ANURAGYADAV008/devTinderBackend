@@ -15,11 +15,15 @@ const {requestRouter}=require("./Routes/request");
 const {userRouter}=require("./Routes/user")
 
 app.use(cors({
-  origin: "http://localhost:5173", // frontend URL (Vite)
+  origin: [
+    "http://localhost:5173",
+    "http://13.60.41.201"
+  ],
   credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS","PATCH"],
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
   allowedHeaders: ["Content-Type", "Authorization"]
 }));
+
 
 
 
