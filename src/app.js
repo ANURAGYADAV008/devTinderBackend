@@ -17,7 +17,8 @@ const {userRouter}=require("./Routes/user")
 app.use(cors({
   origin: [
     "http://localhost:5173",
-    "http://13.60.41.201"
+    "https://dev-tinder.site",
+    "https://www.dev-tinder.site"
   ],
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],

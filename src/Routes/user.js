@@ -32,7 +32,7 @@ userRouter.get("/user/connections", userAuth, async (req, res) => {
             ]
 
 
-        }).populate("fromUserid", ["firstName", "lastName", "age", "photoUrl","about"]).populate("toUserid", ["firstName", "lastName", "age", "photoUrl"])
+        }).populate("fromUserid", ["firstName", "lastName", "age", "photoUrl","about"]).populate("toUserid", ["firstName", "lastName", "age", "photoUrl","about"])
 
         if (getallConnection.length === 0) return res.status(400).send({ message: "NO coonection Request Found" });
 
